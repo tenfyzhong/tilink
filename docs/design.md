@@ -23,6 +23,8 @@ Kafka listener configuration is generated for the operator to deploy.
 - `internal/aws`: SDK adapters, resource discovery, planning, apply, and cleanup.
 - `internal/worker`: reconciliation and network probes, independent of the CLI.
 - `internal/cli`: interactive input, English output, JSON, and command dispatch.
+- `internal/app`: provider composition, manual handoffs, and verification evidence.
+- `internal/bundle`: embedded Lambda package validation.
 
 The Go module is `github.com/tenfyzhong/tilink`. The common model defines `Config`,
 `Resource`, `Step`, `Plan`, `State`, `Finding`, and `Verification`. Configuration
@@ -45,6 +47,10 @@ persists returned resource IDs. Stable connection and operation IDs are included
 in AWS tags wherever supported. Untaggable children are anchored to recorded,
 owned parent resources. Unknown ownership is a blocker, not permission to adopt.
 Only resources with a known cleanup operation may be created automatically.
+Connection IDs are randomly generated and saved before the first mutation;
+operation IDs are derived from that persisted identity and the logical step.
+Separate state directories cannot obtain the same ownership merely by using the
+same connection name. Existing state must be retained for recovery.
 
 Configuration changes must not orphan resources. Unsupported replacement or
 immutable changes are rejected with an explanation. Incremental configuration
@@ -122,6 +128,18 @@ old and new writer addresses together in the active forwarding group. DNS errors
 empty or non-private results, and unhealthy replacements preserve existing
 forwarding and produce a finding. Kafka updates preserve broker identity; topology
 changes require a configuration update. There is no zero-downtime promise.
+
+Each target-group pair has an owned health listener on a stable unused port
+starting at 40000. The worker points that listener at the inactive group before
+checking its health; the traffic listener stays unchanged until the checks pass.
+AWS does not health-check a group without a listener association. These auxiliary
+listeners are included in inventory, IAM scope, and cleanup. They are not client
+bootstrap or broker ports. See the
+[AWS NLB health-check contract](https://docs.aws.amazon.com/elasticloadbalancing/latest/network/target-group-health-checks.html).
+
+With maintenance enabled, initial target registration also runs in the VPC and
+does not require local resolution of private hosted zones. Probe sockets resolve,
+validate, and dial the same private IPv4 addresses, including Kafka metadata peers.
 
 Functions run in selected VPC subnets. Reuse a working ELB API interface endpoint
 or explicitly plan its creation with a dedicated security group. Do not create

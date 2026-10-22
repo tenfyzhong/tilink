@@ -27,7 +27,8 @@ make test
 ./bin/tilink --help
 ```
 
-The build packages a Linux Lambda worker into the CLI. Tests use fake SDK clients,
+The CLI supports macOS and Linux. The build packages a Linux ARM64 Lambda worker
+into the CLI; `go install` alone does not build that embedded worker. Tests use fake SDK clients,
 HTTP servers, and local protocol fixtures. Live acceptance requires an isolated AWS
 account, existing TiDB instances, and explicitly selected network resources.
 
@@ -50,6 +51,12 @@ SSO, and assumed roles. TiDB API and database credentials are environment variab
 references, never literal values in configuration. See [CLI reference](docs/cli.md)
 for configuration, manual steps, exit behavior, and deletion.
 
+Start from the [application](examples/app.yaml), [RDS DM](examples/rds-dm.yaml),
+or [Kafka TiCDC](examples/kafka-ticdc.yaml) example. Replace all placeholder IDs
+with resources from the selected account. The outbound examples deliberately
+leave the dataflow API endpoint unset: follow the reported console handoff or
+configure a verified endpoint for your TiDB Cloud environment.
+
 `show` lists generated configuration and every recorded resource, including
 auxiliary infrastructure. `destroy` requires two interactive confirmations and
 deletes resources created by tilink. It preserves reused resources and reports
@@ -58,3 +65,6 @@ the exact configuration changes made to existing resources.
 
 Read the [design and acceptance contract](docs/design.md) before contributing.
 All repository documentation, comments, and examples must be written in English.
+
+See [validation and live acceptance](docs/validation.md) for the test boundary and
+the remaining checks that require an isolated cloud environment.
