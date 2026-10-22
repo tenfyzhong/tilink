@@ -31,3 +31,10 @@ go.work.sum
 # Editor/IDE
 # .idea/
 # .vscode/
+
+# Local build outputs and connection state
+/bin/
+/.build/
+/internal/bundle/assets/worker.zip
+/tilink.yaml
+/.tilink/

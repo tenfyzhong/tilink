@@ -1,0 +1,25 @@
+version: 1
+name: application
+kind: app
+provider: aws
+aws:
+  profile: customer
+  region: ap-northeast-1
+  account_id: "123456789012"
+  vpc_id: vpc-example
+  subnet_ids:
+    - subnet-example-a
+    - subnet-example-b
+  security_group_ids:
+    - sg-application
+tidb:
+  project_id: project-id
+  cluster_id: cluster-id
+  public_key_env: TIDB_PUBLIC_KEY
+  private_key_env: TIDB_PRIVATE_KEY
+verification:
+  username_env: TIDB_SQL_USER
+  password_env: TIDB_SQL_PASSWORD
+  database: test
+maintenance: false
+probe: true
